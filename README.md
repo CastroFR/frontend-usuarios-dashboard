@@ -1,24 +1,20 @@
-# 🚀 Dashboard de Administración de Usuarios
+# 🚀 Dashboard de Administración de Usuarios - Frontend
 
-Dashboard profesional para gestión de usuarios construido con React, Vite y Tailwind CSS.
+Dashboard profesional construido con **React + Vite + Tailwind CSS** para consumir la API de Gestión de Usuarios desarrollada en Laravel.
 
 ---
 
-## ✨ Características
+## 📋 Características Principales
 
-- ✅ **Autenticación JWT** completa con refresh token
+- ✅ **Autenticación JWT** completa con refresh automático
 - ✅ **Dashboard interactivo** con estadísticas en tiempo real
 - ✅ **CRUD completo** de usuarios (Crear, Leer, Actualizar, Eliminar)
 - ✅ **Gestión avanzada** con soft deletes y restauración
 - ✅ **Estadísticas detalladas** (diarias, semanales, mensuales)
 - ✅ **Diseño responsivo** adaptado a móviles, tablets y desktop
 - ✅ **Modo oscuro/claro** con persistencia
-- ✅ **Validaciones de formularios** robustas
-- ✅ **Manejo de errores** elegante
-- ✅ **Carga optimizada** con React Query
-- ✅ **Testing** con Vitest y Testing Library
-- ✅ **100% Type Safe** (con PropTypes)
 - ✅ **Arquitectura modular** siguiendo principios SOLID
+- ✅ **Testing completo** con Vitest y Testing Library
 
 ---
 
@@ -37,33 +33,83 @@ Dashboard profesional para gestión de usuarios construido con React, Vite y Tai
 
 ---
 
-## 📁 Estructura del Proyecto
+## 👥 Equipo de 3 Personas
 
+### **Persona 1: Configuración Base y Autenticación**
+
+**Responsabilidades:**
+- Configuración del proyecto
+- Servicios API e Axios
+- Autenticación JWT
+- Rutas protegidas
+- Contexto global de React
+
+**Carpetas principales:**
 ```
-src/
-├── api/                    # Servicios de API
-├── assets/                 # Recursos estáticos
-├── components/
-│   ├── common/            # Componentes genéricos
-│   ├── layout/            # Componentes de layout
-│   └── ui/                # Componentes específicos de UI
-├── contexts/              # Contextos React (estado global)
-├── hooks/                 # Custom hooks
-├── pages/                 # Páginas/views
-├── routes/                # Configuración de rutas
-├── utils/                 # Utilidades y helpers
-├── App.jsx               # Componente raíz
-└── main.jsx              # Punto de entrada
+src/api/
+src/contexts/
+src/hooks/
+src/routes/
 ```
+
+**Archivos clave a completar primero:**
+- `src/api/axiosConfig.js` - Configuración de Axios
+- `src/api/authService.js` - Servicios de autenticación
+- `src/contexts/AuthContext.jsx` - Contexto de autenticación
+- `src/routes/PrivateRoute.jsx` - Rutas protegidas
 
 ---
 
-## 🚀 Instalación
+### **Persona 2: Componentes UI y Layout**
+
+**Responsabilidades:**
+- Sistema de diseño
+- Componentes reutilizables
+- Layout principal
+- Modo oscuro/claro
+- Estilos globales
+
+**Carpetas principales:**
+```
+src/components/
+src/assets/
+```
+
+**Archivos clave a completar primero:**
+- `src/components/common/Button/Button.jsx` - Componente Button
+- `src/components/common/Input/Input.jsx` - Componente Input
+- `src/components/layout/Layout.jsx` - Layout principal
+- `src/assets/styles/global.css` - Estilos globales
+
+---
+
+### **Persona 3: Páginas y Vistas**
+
+**Responsabilidades:**
+- Páginas principales
+- Formularios y validaciones
+- Navegación
+- Integración de componentes
+
+**Carpetas principales:**
+```
+src/views/
+```
+
+**Archivos clave a completar primero:**
+- `src/views/Auth/Login.jsx` - Página de login
+- `src/views/Auth/Register.jsx` - Página de registro
+- `src/views/Dashboard/Dashboard.jsx` - Dashboard principal
+- `src/views/Users/UserList.jsx` - Listado de usuarios
+
+---
+
+## 🚀 Instalación y Configuración
 
 ### 1. Clonar el repositorio
 
 ```bash
-git clone [url-del-repositorio]
+git clone [URL_DEL_REPOSITORIO]
 cd frontend-usuarios-dashboard
 ```
 
@@ -76,9 +122,18 @@ npm install
 ### 3. Configurar variables de entorno
 
 ```bash
+# Copiar el archivo de ejemplo
 cp .env.example .env
-# Editar .env con tus configuraciones
 ```
+
+Edita `.env` y configura:
+
+```env
+VITE_API_BASE_URL=http://localhost:8000/api
+VITE_API_TIMEOUT=10000
+```
+
+> **Nota:** Ajusta el puerto si tu API Laravel usa otro diferente al 8000
 
 ### 4. Iniciar servidor de desarrollo
 
@@ -86,11 +141,94 @@ cp .env.example .env
 npm run dev
 ```
 
+La aplicación estará disponible en: `http://localhost:5173`
+
 ### 5. Construir para producción
 
 ```bash
 npm run build
 ```
+
+---
+
+## 📁 Estructura del Proyecto
+
+```
+frontend-usuarios-dashboard/
+├── src/
+│   ├── api/                    # Servicios API (Persona 1)
+│   │   ├── axiosConfig.js
+│   │   ├── authService.js
+│   │   ├── userService.js
+│   │   └── statisticsService.js
+│   ├── assets/                 # Recursos estáticos (Persona 2)
+│   │   └── styles/
+│   │       ├── global.css
+│   │       └── theme.css
+│   ├── components/             # Componentes reutilizables (Persona 2)
+│   │   ├── common/
+│   │   │   ├── Button
+│   │   │   ├── Input
+│   │   │   ├── Card
+│   │   │   └── Modal
+│   │   └── layout/
+│   │       ├── Header
+│   │       ├── Sidebar
+│   │       └── Layout.jsx
+│   ├── contexts/               # Contextos React (Persona 1)
+│   │   ├── AuthContext.jsx
+│   │   └── ThemeContext.jsx
+│   ├── hooks/                  # Custom hooks (Persona 1)
+│   │   ├── useAuth.js
+│   │   ├── useUsers.js
+│   │   └── useForm.js
+│   ├── routes/                 # Configuración de rutas (Persona 1)
+│   │   ├── PrivateRoute.jsx
+│   │   ├── PublicRoute.jsx
+│   │   └── AppRoutes.jsx
+│   ├── utils/                  # Utilidades (Todos)
+│   │   ├── constants.js
+│   │   ├── validators.js
+│   │   └── helpers.js
+│   ├── views/                  # Páginas/Vistas (Persona 3)
+│   │   ├── Auth/
+│   │   │   ├── Login.jsx
+│   │   │   └── Register.jsx
+│   │   ├── Dashboard/
+│   │   │   └── Dashboard.jsx
+│   │   ├── Users/
+│   │   │   ├── UserList.jsx
+│   │   │   └── UserForm.jsx
+│   │   └── Statistics/
+│   │       └── Statistics.jsx
+│   ├── App.jsx
+│   └── main.jsx
+├── tests/
+│   ├── unit/
+│   └── integration/
+├── public/
+├── index.html
+├── vite.config.js
+├── tailwind.config.js
+├── postcss.config.js
+├── .env.example
+├── package.json
+└── README.md
+```
+
+---
+
+## 📦 Scripts Disponibles
+
+| Script | Descripción |
+|--------|-------------|
+| `npm run dev` | Inicia servidor de desarrollo |
+| `npm run build` | Construye para producción |
+| `npm run preview` | Previsualiza la build |
+| `npm run test` | Ejecuta tests unitarios |
+| `npm run test:ui` | Ejecuta tests con interfaz visual |
+| `npm run test:coverage` | Genera reporte de cobertura |
+| `npm run lint` | Ejecuta ESLint |
 
 ---
 
@@ -102,7 +240,7 @@ npm run build
 npm run test
 ```
 
-### Ejecutar tests con interfaz UI
+### Ejecutar tests con interfaz visual
 
 ```bash
 npm run test:ui
@@ -116,29 +254,6 @@ npm run test:coverage
 
 ---
 
-## 📦 Scripts Disponibles
-
-| Script | Descripción |
-|--------|-------------|
-| `npm run dev` | Inicia el servidor de desarrollo |
-| `npm run build` | Construye la aplicación para producción |
-| `npm run preview` | Previsualiza la build en local |
-| `npm run test` | Ejecuta los tests |
-| `npm run test:ui` | Ejecuta tests con interfaz visual |
-| `npm run test:coverage` | Genera reporte de cobertura |
-| `npm run lint` | Ejecuta ESLint |
-
----
-
-## 🔌 Plugins de Vite
-
-Este proyecto utiliza los siguientes plugins de Vite para React:
-
-- **[@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react)** - Usa Babel para Fast Refresh
-- **[@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc)** - Usa SWC para Fast Refresh
-
----
-
 ## 🔗 Integración con API
 
 La aplicación se conecta con la API Laravel en:
@@ -147,24 +262,35 @@ La aplicación se conecta con la API Laravel en:
 Base URL: http://localhost:8000/api
 ```
 
-Endpoints principales:
-- `POST /api/login` - Autenticación
-- `GET /api/users` - Listar usuarios
-- `POST /api/users` - Crear usuario
-- `PUT /api/users/{id}` - Actualizar usuario
-- `DELETE /api/users/{id}` - Eliminar usuario
-- `GET /api/statistics/*` - Estadísticas
+### Endpoints principales:
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| POST | `/login` | Autenticación |
+| POST | `/register` | Registrar usuario |
+| GET | `/users` | Listar usuarios |
+| POST | `/users` | Crear usuario |
+| PUT | `/users/{id}` | Actualizar usuario |
+| DELETE | `/users/{id}` | Eliminar usuario |
+| POST | `/users/{id}/restore` | Restaurar usuario |
+| DELETE | `/users/{id}/force` | Eliminar permanentemente |
+| GET | `/statistics/daily` | Estadísticas diarias |
+| GET | `/statistics/weekly` | Estadísticas semanales |
+| GET | `/statistics/monthly` | Estadísticas mensuales |
+| GET | `/statistics/summary` | Resumen general |
 
 ---
 
-## 📝 Variables de Entorno
+## 🔐 Autenticación
 
-Copia el archivo `.env.example` a `.env` y configura:
+### Flujo de autenticación:
 
-```env
-VITE_API_BASE_URL=http://localhost:8000/api
-VITE_API_TIMEOUT=10000
-```
+1. Usuario inicia sesión con email y contraseña
+2. API devuelve token JWT
+3. Token se almacena en localStorage
+4. Se incluye en header `Authorization: Bearer {token}`
+5. Si expira, se usa refresh token automáticamente
+6. Si falla, redirige a login
 
 ---
 
@@ -177,10 +303,42 @@ Los temas se configuran en `tailwind.config.js`. Puedes personalizar:
 - Tipografía
 - Espaciados
 - Breakpoints
+- Modo oscuro/claro
 
 ### Componentes
 
-Los componentes reutilizables están en `src/components/`. Sigue la estructura modular para mantener la organización.
+Los componentes reutilizables están en `src/components/`. Sigue la estructura modular para mantener la organización y facilitar el mantenimiento.
+
+---
+
+## 📋 Checklist de Implementación
+
+### Fase 1: Configuración Base (Persona 1)
+- [ ] Configurar Axios y servicios API
+- [ ] Implementar AuthContext
+- [ ] Crear hooks de autenticación
+- [ ] Configurar rutas públicas/privadas
+- [ ] Implementar refresh token automático
+
+### Fase 2: Componentes (Persona 2)
+- [ ] Crear componentes comunes (Button, Input, Card)
+- [ ] Implementar Layout principal
+- [ ] Crear Header y Sidebar
+- [ ] Configurar estilos globales
+- [ ] Implementar modo oscuro/claro
+
+### Fase 3: Páginas (Persona 3)
+- [ ] Página de Login
+- [ ] Página de Registro
+- [ ] Dashboard con estadísticas
+- [ ] Listado de usuarios
+- [ ] Formularios de CRUD
+
+### Fase 4: Testing e Integración (Todos)
+- [ ] Tests unitarios
+- [ ] Tests de integración
+- [ ] Pruebas end-to-end
+- [ ] Documentación final
 
 ---
 
@@ -205,6 +363,59 @@ npm install
 npm run dev -- --force
 ```
 
+### CORS errors
+
+Verifica que:
+- API Laravel tiene CORS habilitado
+- Base URL en `.env` es correcta
+- Token se envía correctamente
+
+---
+
+## 🔄 Flujo de Trabajo Colaborativo
+
+### Commits
+
+```bash
+# Features
+git commit -m "feat: descripción de la característica"
+
+# Fixes
+git commit -m "fix: descripción del arreglo"
+
+# Documentation
+git commit -m "docs: descripción del cambio"
+```
+
+### Ramas
+
+```bash
+git checkout -b feature/nombre-feature
+git push origin feature/nombre-feature
+# Crear Pull Request en GitHub
+```
+
+### Sincronización
+
+```bash
+# Mantener rama actualizada
+git pull origin main
+
+# Rebase interactivo
+git rebase -i origin/main
+```
+
+---
+
+## 📞 Soporte
+
+Para problemas o preguntas:
+
+1. Revisar logs en la consola del navegador (F12)
+2. Verificar terminal del servidor de desarrollo
+3. Consultar API en Postman
+4. Abrir issue en el repositorio
+
 ---
 
 ## 📄 Licencia
@@ -213,18 +424,4 @@ Este proyecto está bajo licencia MIT.
 
 ---
 
-## 👥 Contribución
-
-Las contribuciones son bienvenidas. Por favor:
-
-1. Fork el repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/nombre-feature`)
-3. Commit tus cambios (`git commit -m 'feat: descripción'`)
-4. Push a la rama (`git push origin feature/nombre-feature`)
-5. Abre un Pull Request
-
----
-
-## 📞 Soporte
-
-Para problemas o preguntas, abre un issue en el repositorio.
+Desarrollado como proyecto final - FSJ 30
