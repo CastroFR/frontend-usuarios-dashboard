@@ -4,15 +4,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { NotificationProvider, NotificationContainer } from './contexts/NotificationContext';
 import AppRoutes from './routes/AppRoutes';
 import Layout from './components/layout/Layout';
 import Loader from './components/common/Loader/Loader';
 import ErrorBoundary from './components/common/ErrorBoundary/ErrorBoundary';
 import './assets/styles/global.css';
 import './assets/styles/theme.css';
-
-// Lazy load components that are not needed immediately
-const ToastProvider = lazy(() => import('./contexts/ToastContext'));
 
 // Configuración de React Query
 const queryClient = new QueryClient({
@@ -46,13 +44,13 @@ function App() {
         <Router>
           <ThemeProvider>
             <AuthProvider>
-              <Suspense fallback={<LoadingFallback />}>
-                <ToastProvider>
-                  <Layout>
-                    <AppRoutes />
-                  </Layout>
-                </ToastProvider>
-              </Suspense>
+              <NotificationProvider>
+                <Layout>
+                  <AppRoutes />
+                  {/* Contenedor de notificaciones toast */}
+                  <NotificationContainer />
+                </Layout>
+              </NotificationProvider>
             </AuthProvider>
           </ThemeProvider>
         </Router>
