@@ -1,0 +1,17 @@
+// Exportar todas las vistas para lazy loading
+export { default as Login } from './Auth/Login';
+export { default as Register } from './Auth/Register';
+export { default as ForgotPassword } from './Auth/ForgotPassword';
+export { default as Dashboard } from './Dashboard/Dashboard';
+export { default as Overview } from './Dashboard/Overview';
+export { default as Analytics } from './Dashboard/Analytics';
+export { default as UserList } from './Users/UserList';
+export { default as UserCreate } from './Users/UserCreate';
+export { default as UserEdit } from './Users/UserEdit';
+export { default as UserView } from './Users/UserView';
+export { default as Statistics } from './Statistics/Statistics';
+export { default as DailyStats } from './Statistics/DailyStats';
+export { default as WeeklyStats } from './Statistics/WeeklyStats';
+export { default as MonthlyStats } from './Statistics/MonthlyStats';
+export { default as Profile } from './Profile/Profile';
+export { default as Settings } from './Settings/Settings';

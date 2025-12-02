@@ -1,188 +1,272 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
-import { 
-  UsersIcon, 
-  ChartBarIcon, 
-  UserAddIcon, 
-  CalendarIcon 
-} from '@heroicons/react/outline';
-import { userService } from '../../api/userService';
-import { statisticsService } from '../../api/statisticsService';
-import Card from '../../components/common/Card/Card';
-import Chart from '../../components/common/Chart/Chart';
-import Loader from '../../components/common/Loader/Loader';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useData } from '../../contexts/DataContext';
+import { authService } from '../../api/authService';
+import Card from '../../components/common/Card';
+import Button from '../../components/common/Button';
+import { formatNumber } from '../../utils/helpers';
 
 const Dashboard = () => {
-  const { data: summary, isLoading: summaryLoading } = useQuery({
-    queryKey: ['statistics', 'summary'],
-    queryFn: () => statisticsService.getSummary(),
-  });
+  const navigate = useNavigate();
+  const { dashboardData, loading, lastUpdated, refreshData } = useData();
+  const [apiHealth, setApiHealth] = useState(null);
 
-  const { data: recentUsers, isLoading: usersLoading } = useQuery({
-    queryKey: ['users', 'recent'],
-    queryFn: () => userService.paginate(1, 5),
-  });
+  useEffect(() => {
+    checkApiHealth();
+  }, []);
 
-  if (summaryLoading || usersLoading) {
-    return <Loader />;
+  const checkApiHealth = async () => {
+    try {
+      const health = await authService.checkHealth();
+      setApiHealth(health);
+    } catch (error) {
+      setApiHealth({ status: 'unreachable', message: 'API no disponible' });
+    }
+  };
+
+  // Acciones rápidas
+  const handleQuickAction = (action) => {
+    switch (action) {
+      case 'new-user':
+        navigate('/users/new');
+        break;
+      case 'view-reports':
+        navigate('/statistics');
+        break;
+      case 'settings':
+        alert('Configuración en desarrollo');
+        break;
+      case 'edit-profile':
+        navigate('/profile');
+        break;
+      default:
+        break;
+    }
+  };
+
+  if (loading && !dashboardData) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+          <Button onClick={refreshData} loading={loading}>
+            Actualizar
+          </Button>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <div className="animate-pulse space-y-3">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
   }
-
-  const statsCards = [
-    {
-      title: 'Total Usuarios',
-      value: summary?.total || 0,
-      icon: UsersIcon,
-      color: 'primary',
-      change: '+12%',
-    },
-    {
-      title: 'Nuevos Hoy',
-      value: summary?.today || 0,
-      icon: UserAddIcon,
-      color: 'green',
-      change: '+5%',
-    },
-    {
-      title: 'Esta Semana',
-      value: summary?.this_week || 0,
-      icon: CalendarIcon,
-      color: 'blue',
-      change: '+18%',
-    },
-    {
-      title: 'Este Mes',
-      value: summary?.this_month || 0,
-      icon: ChartBarIcon,
-      color: 'purple',
-      change: '+24%',
-    },
-  ];
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Dashboard de Administración
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Bienvenido al panel de administración de usuarios
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            Resumen general del sistema
           </p>
         </div>
-        <div className="flex space-x-3">
-          <Link
-            to="/users/create"
-            className="btn-primary flex items-center space-x-2"
-          >
-            <UserAddIcon className="h-5 w-5" />
-            <span>Nuevo Usuario</span>
-          </Link>
+        
+        <div className="flex items-center space-x-4">
+          {apiHealth && (
+            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+              apiHealth.status === 'healthy' 
+                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+            }`}>
+              <span className={`w-2 h-2 rounded-full mr-2 ${
+                apiHealth.status === 'healthy' ? 'bg-green-500' : 'bg-red-500'
+              }`}></span>
+              API {apiHealth.status === 'healthy' ? 'Online' : 'Offline'}
+            </div>
+          )}
+          <div className="text-xs text-gray-500">
+            {lastUpdated && `Actualizado: ${lastUpdated.toLocaleTimeString()}`}
+          </div>
+          <Button onClick={refreshData} variant="outline">
+            Actualizar
+          </Button>
         </div>
       </div>
 
-      {/* Cards de Estadísticas */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {statsCards.map((stat, index) => (
-          <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  {stat.title}
-                </p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                  {stat.value}
-                </p>
-                <p className={`text-sm mt-1 ${
-                  stat.change.startsWith('+') 
-                    ? 'text-green-600' 
-                    : 'text-red-600'
-                }`}>
-                  {stat.change} desde ayer
-                </p>
-              </div>
-              <div className={`p-3 rounded-full bg-${stat.color}-100 dark:bg-${stat.color}-900`}>
-                <stat.icon className={`h-6 w-6 text-${stat.color}-600 dark:text-${stat.color}-400`} />
+        <Card
+          title="Total de Usuarios"
+          subtitle="Usuarios registrados"
+          className="border-l-4 border-primary-500"
+          hover
+        >
+          <div className="text-3xl font-bold text-gray-900 dark:text-white">
+            {formatNumber(dashboardData?.summary?.data?.total_users || 0)}
+          </div>
+          <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            {dashboardData?.summary?.data?.new_users_today || 0} nuevos hoy
+          </div>
+        </Card>
+
+        <Card
+          title="Usuarios Activos"
+          subtitle="Últimos 30 días"
+          className="border-l-4 border-green-500"
+          hover
+        >
+          <div className="text-3xl font-bold text-gray-900 dark:text-white">
+            {formatNumber(dashboardData?.summary?.data?.active_users || 0)}
+          </div>
+          <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            {dashboardData?.summary?.data?.active_percentage || 0}% del total
+          </div>
+        </Card>
+
+        <Card
+          title="Crecimiento Mensual"
+          subtitle="Este mes"
+          className="border-l-4 border-blue-500"
+          hover
+        >
+          <div className="text-3xl font-bold text-gray-900 dark:text-white">
+            {dashboardData?.summary?.data?.monthly_growth || 0}%
+          </div>
+          <div className={`mt-2 text-sm ${
+            (dashboardData?.summary?.data?.monthly_growth || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+          }`}>
+            {(dashboardData?.summary?.data?.monthly_growth || 0) >= 0 ? '↗' : '↘'} desde el mes anterior
+          </div>
+        </Card>
+
+        <Card
+          title="Registros Hoy"
+          subtitle="Nuevos usuarios"
+          className="border-l-4 border-purple-500"
+          hover
+        >
+          <div className="text-3xl font-bold text-gray-900 dark:text-white">
+            {formatNumber(dashboardData?.summary?.data?.today_registrations || 0)}
+          </div>
+          <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            {dashboardData?.summary?.data?.yesterday_registrations || 0} ayer
+          </div>
+        </Card>
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card 
+          title="Actividad Diaria" 
+          subtitle="Últimos 7 días"
+          headerAction={
+            <Button variant="ghost" size="sm" onClick={() => navigate('/statistics')}>
+              Ver más
+            </Button>
+          }
+        >
+          {dashboardData?.daily?.data?.length > 0 ? (
+            <div className="h-64">
+              <div className="h-full flex items-center justify-center text-gray-400 dark:text-gray-500">
+                Gráfico de actividad diaria
+                <div className="ml-4 text-sm">
+                  <p>Registros: {dashboardData.daily.data.reduce((acc, day) => acc + (day.registrations || 0), 0)}</p>
+                  <p>Promedio: {Math.round(dashboardData.daily.data.reduce((acc, day) => acc + (day.registrations || 0), 0) / 7)} por día</p>
+                </div>
               </div>
             </div>
-          </Card>
-        ))}
-      </div>
-
-      {/* Gráfico y Tabla */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Gráfico de usuarios por mes */}
-        <Card className="lg:col-span-1">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Registros Mensuales
-          </h3>
-          <div className="h-64">
-            <Chart
-              type="bar"
-              data={{
-                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                datasets: [{
-                  label: 'Usuarios Registrados',
-                  data: [65, 59, 80, 81, 56, 55],
-                  backgroundColor: 'rgba(59, 130, 246, 0.5)',
-                  borderColor: 'rgb(59, 130, 246)',
-                  borderWidth: 1,
-                }]
-              }}
-            />
-          </div>
+          ) : (
+            <div className="h-64 flex items-center justify-center text-gray-400 dark:text-gray-500">
+              No hay datos de actividad disponibles
+            </div>
+          )}
         </Card>
 
-        {/* Usuarios Recientes */}
-        <Card className="lg:col-span-1">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Usuarios Recientes
-            </h3>
-            <Link
-              to="/users"
-              className="text-primary-600 hover:text-primary-800 text-sm font-medium"
-            >
-              Ver todos →
-            </Link>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead>
-                <tr>
-                  <th className="table-header">Nombre</th>
-                  <th className="table-header">Email</th>
-                  <th className="table-header">Fecha</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {recentUsers?.data?.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <td className="table-cell">
-                      <div className="flex items-center">
-                        <div className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center mr-3">
-                          <span className="text-primary-600 dark:text-primary-400 font-medium">
-                            {user.name.charAt(0)}
-                          </span>
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">
-                            {user.name}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="table-cell">{user.email}</td>
-                    <td className="table-cell">
-                      {new Date(user.created_at).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <Card 
+          title="Crecimiento Mensual" 
+          subtitle="Últimos 6 meses"
+          headerAction={
+            <Button variant="ghost" size="sm" onClick={() => navigate('/statistics')}>
+              Ver más
+            </Button>
+          }
+        >
+          {dashboardData?.monthly?.data?.length > 0 ? (
+            <div className="h-64">
+              <div className="h-full flex items-center justify-center text-gray-400 dark:text-gray-500">
+                Gráfico de crecimiento mensual
+                <div className="ml-4 text-sm">
+                  <p>Total: {dashboardData.monthly.data.reduce((acc, month) => acc + (month.registrations || 0), 0)}</p>
+                  <p>Crecimiento: {dashboardData.monthly.data[dashboardData.monthly.data.length - 1]?.growth || 0}%</p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="h-64 flex items-center justify-center text-gray-400 dark:text-gray-500">
+              No hay datos de crecimiento disponibles
+            </div>
+          )}
         </Card>
       </div>
+
+      {/* Quick Actions */}
+      <Card title="Acciones Rápidas">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Button 
+            variant="outline" 
+            fullWidth 
+            className="justify-start"
+            onClick={() => handleQuickAction('new-user')}
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Nuevo Usuario
+          </Button>
+          <Button 
+            variant="outline" 
+            fullWidth 
+            className="justify-start"
+            onClick={() => handleQuickAction('view-reports')}
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Ver Reportes
+          </Button>
+          <Button 
+            variant="outline" 
+            fullWidth 
+            className="justify-start"
+            onClick={() => handleQuickAction('settings')}
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Configuración
+          </Button>
+          <Button 
+            variant="outline" 
+            fullWidth 
+            className="justify-start"
+            onClick={() => handleQuickAction('edit-profile')}
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Editar Perfil
+          </Button>
+        </div>
+      </Card>
     </div>
   );
 };
