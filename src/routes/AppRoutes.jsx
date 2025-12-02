@@ -1,67 +1,128 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { Navigate, Routes, Route } from 'react-router-dom';
 import PrivateRoute from './PrivateRoute';
 import PublicRoute from './PublicRoute';
-
-// Lazy loading para mejor performance
-const Login = lazy(() => import('../views/Auth/Login'));
-const Register = lazy(() => import('../views/Auth/Register'));
-const Dashboard = lazy(() => import('../views/Dashboard/Dashboard'));
-const UserList = lazy(() => import('../views/Users/UserList'));
-
-// Loader para suspenso
-const Loader = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-  </div>
-);
+import Layout from '../components/layout/Layout';
+import Login from '../views/Auth/Login';
+import Register from '../views/Auth/Register';
+import Dashboard from '../views/Dashboard/Dashboard';
+import UserList from '../views/Users/UserList';
+import UserForm from '../views/Users/UserForm';
+import Statistics from '../views/Statistics/Statistics';
+import NotFound from '../views/NotFound/NotFound';
+import Profile from '../views/Profile/Profile';
+import Settings from '../views/Settings/Settings';
+import Notifications from '../views/Notifications/Notifications';
 
 const AppRoutes = () => {
   return (
-    <Suspense fallback={<Loader />}>
-      <Routes>
-        {/* Rutas públicas */}
-        <Route path="/login" element={
-          <PublicRoute restricted>
+    <Routes>
+      {/* Rutas públicas */}
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
             <Login />
           </PublicRoute>
-        } />
-        
-        <Route path="/register" element={
-          <PublicRoute restricted>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <PublicRoute>
             <Register />
           </PublicRoute>
-        } />
+        }
+      />
 
-        {/* Rutas protegidas */}
-        <Route path="/dashboard" element={
+      {/* Rutas privadas */}
+      <Route
+        path="/dashboard"
+        element={
           <PrivateRoute>
-            <Dashboard />
+            <Layout>
+              <Dashboard />
+            </Layout>
           </PrivateRoute>
-        } />
-        
-        <Route path="/users" element={
+        }
+      />
+      <Route
+        path="/users"
+        element={
           <PrivateRoute>
-            <UserList />
+            <Layout>
+              <UserList />
+            </Layout>
           </PrivateRoute>
-        } />
+        }
+      />
+      <Route
+        path="/users/new"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <UserForm />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/users/:id/edit"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <UserForm />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/statistics"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <Statistics />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <Profile />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <Settings />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/notifications"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <Notifications />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
 
-        {/* Ruta por defecto */}
-        <Route path="/" element={
-          <PrivateRoute>
-            <Dashboard />
-          </PrivateRoute>
-        } />
-        
-        {/* Ruta 404 */}
-        <Route path="*" element={
-          <div className="min-h-screen flex items-center justify-center">
-            <h1 className="text-2xl font-bold text-gray-700">404 - Página no encontrada</h1>
-          </div>
-        } />
-      </Routes>
-    </Suspense>
+      {/* Ruta por defecto */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+      {/* Ruta 404 */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 };
 

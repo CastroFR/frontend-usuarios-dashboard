@@ -1,92 +1,105 @@
 import { useState, useCallback } from 'react';
 
-export const useForm = (initialValues = {}, validate) => {
-  const [values, setValues] = useState(initialValues);
+export const useForm = (initialState = {}, validators = {}) => {
+  const [formData, setFormData] = useState(initialState);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Manejar cambios
   const handleChange = useCallback((e) => {
-    const { name, value, type, checked } = e.target;
-    
-    setValues(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  }, []);
+    const { name, value, type, checked, files } = e.target;
 
-  // Manejar blur
+    let newValue;
+    if (type === 'checkbox') {
+      newValue = checked;
+    } else if (type === 'file') {
+      newValue = files[0];
+    } else if (type === 'number') {
+      newValue = value === '' ? '' : Number(value);
+    } else {
+      newValue = value;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      [name]: newValue,
+    }));
+
+    // Validar campo al cambiar si está marcado como touched
+    if (touched[name] && validators[name] && typeof validators[name] === 'function') {
+
+      const error = validators[name](newValue, formData);
+      setErrors(prev => ({
+        ...prev,
+        [name]: error,
+      }));
+    }
+  }, [validators, touched, formData]);
+
   const handleBlur = useCallback((e) => {
     const { name } = e.target;
-    
     setTouched(prev => ({
       ...prev,
       [name]: true,
     }));
 
-    // Validar si existe función de validación
-    if (validate) {
-      const validationErrors = validate(values);
-      setErrors(validationErrors);
+    // Validar campo al salir solo si es una función
+    if (validators[name] && typeof validators[name] === 'function') {
+      const error = validators[name](formData[name], formData);
+      setErrors(prev => ({
+        ...prev,
+        [name]: error,
+      }));
     }
-  }, [values, validate]);
+  }, [validators, formData]);
 
-  // Setear valor manualmente
   const setFieldValue = useCallback((name, value) => {
-    setValues(prev => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value,
     }));
   }, []);
 
-  // Resetear formulario
   const resetForm = useCallback(() => {
-    setValues(initialValues);
+    setFormData(initialState);
     setErrors({});
     setTouched({});
-    setIsSubmitting(false);
-  }, [initialValues]);
+  }, [initialState]);
 
-  // Manejar submit
-  const handleSubmit = useCallback((onSubmit) => async (e) => {
-    e.preventDefault();
-    
-    setIsSubmitting(true);
+  const validateForm = useCallback(() => {
+    const newErrors = {};
 
-    // Validar antes de enviar
-    if (validate) {
-      const validationErrors = validate(values);
-      setErrors(validationErrors);
-      
-      if (Object.keys(validationErrors).length > 0) {
-        setIsSubmitting(false);
-        return;
+    Object.keys(validators).forEach(key => {
+      // Solo validar si el validador es una función
+      if (validators[key] && typeof validators[key] === 'function') {
+        const error = validators[key](formData[key], formData);
+        if (error) {
+          newErrors[key] = error;
+        }
       }
-    }
+    });
 
-    try {
-      await onSubmit(values, { resetForm });
-    } catch (error) {
-      console.error('Form submission error:', error);
-      setErrors({
-        submit: error.response?.data?.message || 'Error al enviar el formulario',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [values, validate, resetForm]);
+    setErrors(newErrors);
+    setTouched(
+      Object.keys(validators).reduce((acc, key) => {
+        acc[key] = true;
+        return acc;
+      }, {})
+    );
+
+    return Object.keys(newErrors).length === 0;
+  }, [formData, validators]);
 
   return {
-    values,
+    formData,
     errors,
     touched,
-    isSubmitting,
     handleChange,
     handleBlur,
-    handleSubmit,
     setFieldValue,
     resetForm,
-    setValues,
+    validateForm,
+    setFormData,
+    setErrors,
+    setTouched,
   };
 };

@@ -1,119 +1,142 @@
 import axiosInstance from './axiosConfig';
 
-/**
- * Servicio de autenticación
- * Gestiona todas las operaciones relacionadas con la autenticación de usuarios:
- * - Login y registro
- * - Almacenamiento y recuperación de tokens
- * - Validación de estado de autenticación
- */
 export const authService = {
-  /**
-   * Login de usuario
-   * @param {Object} credentials - Credenciales del usuario
-   * @param {string} credentials.email - Email del usuario
-   * @param {string} credentials.password - Contraseña del usuario
-   * @returns {Promise<{user: Object, token: string}>} Datos del usuario y token de acceso
-   * @description Realiza la autenticación del usuario y almacena los tokens en localStorage
-   */
   async login(credentials) {
-    const response = await axiosInstance.post('/login', credentials);
-    const { token, user } = response.data.data;
-    
-    // Almacena los tokens en localStorage para mantener la sesión persistente
-    localStorage.setItem('access_token', token);
-    localStorage.setItem('refresh_token', token);
-    
-    return { user, token };
-  },
-
-  /**
-   * Registro de nuevo usuario
-   * @param {Object} userData - Datos del nuevo usuario
-   * @param {string} userData.name - Nombre completo del usuario
-   * @param {string} userData.email - Email del usuario
-   * @param {string} userData.password - Contraseña del usuario
-   * @returns {Promise<{user: Object, token: string}>} Datos del usuario y token de acceso
-   * @description Crea un nuevo usuario en el sistema y autentica automáticamente
-   */
-  async register(userData) {
-    const response = await axiosInstance.post('/register', userData);
-    const { token, user } = response.data.data;
-    
-    // Almacena los tokens inmediatamente después del registro exitoso
-    localStorage.setItem('access_token', token);
-    localStorage.setItem('refresh_token', token);
-    
-    return { user, token };
-  },
-
-  /**
-   * Logout de usuario
-   * @returns {Promise<void>}
-   * @description Cierra la sesión del usuario en el servidor y limpia los tokens del localStorage
-   * Los errores en la solicitud al servidor se capturan para no interrumpir el proceso de logout local
-   */
-  async logout() {
     try {
-      // Notifica al servidor para invalidar la sesión
-      await axiosInstance.post('/logout');
+      console.log('Enviando credenciales:', credentials);
+      const response = await axiosInstance.post('/login', credentials);
+      console.log('Respuesta del login:', response.data);
+
+      if (response.data.success && response.data.data?.token) {
+        localStorage.setItem('token', response.data.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.data.user));
+        console.log('Token guardado en localStorage:', response.data.data.token.substring(0, 20) + '...');
+      } else {
+        console.error('Respuesta sin token:', response.data);
+      }
+
+      return response.data;
     } catch (error) {
-      // Registra el error pero continúa con la limpieza local
-      console.log('Logout error:', error);
-    } finally {
-      // Siempre elimina los tokens del almacenamiento local
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
+      console.error('Error en login:', error.response?.data || error);
+      throw this.handleError(error);
     }
   },
 
-  /**
-   * Refresca el token de acceso
-   * @returns {Promise<string>} Nuevo token de acceso
-   * @description Obtiene un nuevo token de acceso usando el refresh token
-   * Útil cuando el token actual está a punto de expirar
-   */
+  async register(userData) {
+    try {
+      const response = await axiosInstance.post('/register', userData);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  },
+
+  async logout() {
+    try {
+      const response = await axiosInstance.post('/logout');
+      this.clearAuthData();
+      return response.data;
+    } catch (error) {
+      console.error('Error en logout:', error);
+      this.clearAuthData();
+      return { success: true, message: 'Sesión cerrada localmente' };
+    }
+  },
+
+  async getCurrentUser() {
+    try {
+      const response = await axiosInstance.get('/me');
+      console.log('Respuesta de /me:', response.data);
+      
+      if (response.data.success && response.data.data) {
+        const userData = response.data.data;
+        localStorage.setItem('user', JSON.stringify(userData));
+        console.log('Usuario actualizado en localStorage');
+        return userData;
+      }
+      throw new Error('No se pudo obtener el usuario');
+    } catch (error) {
+      console.error('Error obteniendo usuario actual:', error.response?.data || error);
+      
+      // Si es error 401, limpiar datos
+      if (error.response?.status === 401) {
+        this.clearAuthData();
+      }
+      
+      throw this.handleError(error);
+    }
+  },
+
   async refreshToken() {
-    // Obtiene el refresh token almacenado
-    const token = localStorage.getItem('refresh_token');
-    
-    // Envía el refresh token para obtener uno nuevo
-    const response = await axiosInstance.post('/refresh', {}, {
-      headers: { Authorization: `Bearer ${token}` }
+    try {
+      const response = await axiosInstance.post('/refresh');
+      
+      if (response.data.success && response.data.data?.token) {
+        localStorage.setItem('token', response.data.data.token);
+        console.log('Token refrescado');
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error refrescando token:', error);
+      throw this.handleError(error);
+    }
+  },
+
+  async checkHealth() {
+    try {
+      const response = await axiosInstance.get('/health');
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  },
+
+  clearAuthData() {
+    console.log('Limpiando datos de autenticación');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  },
+
+  getStoredUser() {
+    const user = localStorage.getItem('user');
+    try {
+      return user ? JSON.parse(user) : null;
+    } catch (e) {
+      console.error('Error parseando usuario:', e);
+      return null;
+    }
+  },
+
+  isAuthenticated() {
+    const token = localStorage.getItem('token');
+    return !!token;
+  },
+
+  handleError(error) {
+    console.error('Error detallado:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
     });
     
-    // Extrae y almacena el nuevo token de acceso
-    const newToken = response.data.data.token;
-    localStorage.setItem('access_token', newToken);
-    
-    return newToken;
-  },
+    if (error.response?.data?.errors) {
+      const errors = error.response.data.errors;
+      const firstError = Object.values(errors)[0];
+      return {
+        message: Array.isArray(firstError) ? firstError[0] : firstError,
+        errors: error.response.data.errors,
+      };
+    }
 
-  /**
-   * Obtiene los datos del usuario autenticado
-   * @returns {Promise<Object>} Datos del usuario actual
-   * @description Realiza una solicitud al endpoint /me para obtener la información del usuario autenticado
-   */
-  async getCurrentUser() {
-    const response = await axiosInstance.get('/me');
-    return response.data.data;
-  },
+    if (error.response?.data?.message) {
+      return {
+        message: error.response.data.message,
+      };
+    }
 
-  /**
-   * Verifica si el usuario está autenticado
-   * @returns {boolean} true si existe un token de acceso, false en caso contrario
-   * @description Comprueba la existencia del token en localStorage
-   */
-  isAuthenticated() {
-    return !!localStorage.getItem('access_token');
+    return {
+      message: error.message || 'Error de conexión con el servidor',
+    };
   },
-
-  /**
-   * Obtiene el token de acceso actual
-   * @returns {string|null} Token de acceso o null si no existe
-   * @description Recupera el token almacenado en localStorage para usarlo en peticiones autenticadas
-   */
-  getToken() {
-    return localStorage.getItem('access_token');
-  }
 };

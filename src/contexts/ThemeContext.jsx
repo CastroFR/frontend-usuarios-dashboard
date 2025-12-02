@@ -1,70 +1,43 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import PropTypes from 'prop-types';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
-const ThemeContext = createContext();
+const ThemeContext = createContext({});
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    throw new Error('useTheme debe ser usado dentro de ThemeProvider');
   }
   return context;
 };
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(() => {
-    // Intentar obtener del localStorage
-    const savedTheme = localStorage.getItem('theme');
-    
-    // Si hay tema guardado, usarlo
-    if (savedTheme) {
-      return savedTheme;
-    }
-    
-    // Si no, verificar preferencia del sistema
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-    
-    // Por defecto claro
-    return 'light';
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return saved ? JSON.parse(saved) : prefersDark;
   });
 
   useEffect(() => {
-    const root = window.document.documentElement;
-    
-    // Limpiar clases anteriores
-    root.classList.remove('light', 'dark');
-    
-    // Agregar clase actual
-    root.classList.add(theme);
-    
-    // Guardar en localStorage
-    localStorage.setItem('theme', theme);
-    
-    // Agregar clase de transición suave
-    root.classList.add('transition-colors', 'duration-200');
-  }, [theme]);
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
 
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
   };
 
-  const setLightTheme = () => {
-    setTheme('light');
-  };
-
-  const setDarkTheme = () => {
-    setTheme('dark');
+  const setTheme = (isDark) => {
+    setDarkMode(isDark);
   };
 
   const value = {
-    theme,
-    isDark: theme === 'dark',
-    isLight: theme === 'light',
-    toggleTheme,
-    setLightTheme,
-    setDarkTheme,
+    darkMode,
+    toggleDarkMode,
+    setTheme,
   };
 
   return (
@@ -72,8 +45,4 @@ export const ThemeProvider = ({ children }) => {
       {children}
     </ThemeContext.Provider>
   );
-};
-
-ThemeProvider.propTypes = {
-  children: PropTypes.node.isRequired,
 };

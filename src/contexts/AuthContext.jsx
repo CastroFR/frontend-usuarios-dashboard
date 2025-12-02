@@ -1,122 +1,127 @@
-/**
- * Contexto de autenticación para gestionar el estado de sesión del usuario
- * en toda la aplicación.
- */
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { authService } from '../api/authService';
 
-const ContextoAutenticacion = createContext();
+const AuthContext = createContext({});
 
-/**
- * Hook personalizado para acceder al contexto de autenticación.
- * Debe ser utilizado dentro de un AuthProvider.
- * 
- * @returns {Object} Objeto con propiedades de autenticación: user, loading, error, login, register, logout, isAuthenticated
- * @throws {Error} Si se utiliza fuera del AuthProvider
- */
 export const useAuth = () => {
-  const context = useContext(ContextoAutenticacion);
+  const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth debe ser utilizado dentro de un AuthProvider');
+    throw new Error('useAuth debe ser usado dentro de AuthProvider');
   }
   return context;
 };
 
-/**
- * Proveedor de autenticación que envuelve la aplicación.
- * Gestiona el estado global de autenticación y proporciona métodos
- * para login, registro y cierre de sesión.
- * 
- * @param {Object} props - Propiedades del componente
- * @param {React.ReactNode} props.children - Componentes hijos a envolver
- * @returns {JSX.Element} Proveedor de contexto
- */
 export const AuthProvider = ({ children }) => {
-  // Estado del usuario autenticado
   const [user, setUser] = useState(null);
-  
-  // Indicador de carga durante operaciones asincrónicas
   const [loading, setLoading] = useState(true);
-  
-  // Mensaje de error en caso de fallos
   const [error, setError] = useState(null);
 
-  /**
-   * Efecto que verifica la autenticación al montar el componente.
-   */
   useEffect(() => {
-    verificarAutenticacion();
+    const loadUser = () => {
+      console.log('AuthContext: Iniciando carga de usuario');
+      const token = localStorage.getItem('token');
+      const storedUser = authService.getStoredUser();
+      
+      console.log('AuthContext: Token en localStorage:', !!token);
+      console.log('AuthContext: Usuario en localStorage:', storedUser);
+      
+      if (token && storedUser) {
+        console.log('AuthContext: Estableciendo usuario desde localStorage');
+        setUser(storedUser);
+      } else {
+        console.log('AuthContext: No hay token o usuario, limpiando');
+        authService.clearAuthData();
+      }
+      
+      setLoading(false);
+      console.log('AuthContext: Carga completada');
+    };
+
+    loadUser();
   }, []);
 
-  /**
-   * Verifica si existe una sesión válida al cargar la aplicación.
-   * Intenta obtener los datos del usuario y maneja errores de autenticación.
-   */
-  const verificarAutenticacion = async () => {
-    if (authService.isAuthenticated()) {
-      try {
-        const datosUsuario = await authService.getCurrentUser();
-        setUser(datosUsuario);
-      } catch (error) {
-        console.error('Error al verificar autenticación:', error);
-        await authService.logout();
-        setUser(null);
-      }
-    }
-    setLoading(false);
-  };
-
-  /**
-   * Autentica un usuario con sus credenciales.
-   * 
-   * @param {Object} credentials - Credenciales (email, password)
-   * @returns {Object} Objeto con éxito, usuario y token, o error
-   */
   const login = async (credentials) => {
-    try {
-      setError(null);
-      const { user, token } = await authService.login(credentials);
-      setUser(user);
-      return { success: true, user, token };
-    } catch (error) {
-      const message = error.response?.data?.message || 'Error al iniciar sesión';
-      setError(message);
-      return { success: false, error: message };
-    }
-  };
-
-  /**
-   * Registra un nuevo usuario en la aplicación.
-   * 
-   * @param {Object} userData - Datos del usuario a registrar
-   * @returns {Object} Objeto con éxito, usuario y token, o error
-   */
-  const register = async (userData) => {
-    try {
-      setError(null);
-      const { user, token } = await authService.register(userData);
-      setUser(user);
-      return { success: true, user, token };
-    } catch (error) {
-      const message = error.response?.data?.message || 'Error al registrar el usuario';
-      setError(message);
-      return { success: false, error: message };
-    }
-  };
-
-  /**
-   * Cierra la sesión del usuario autenticado.
-   */
-  const logout = async () => {
-    await authService.logout();
-    setUser(null);
     setError(null);
+    console.log('AuthContext: Iniciando login');
+    
+    try {
+      const response = await authService.login(credentials);
+      console.log('AuthContext: Login exitoso, respuesta:', response);
+      
+      if (response.success && response.data) {
+        console.log('AuthContext: Estableciendo usuario desde respuesta');
+        setUser(response.data.user);
+        
+        // Verificar si podemos obtener el usuario actual
+        try {
+          const currentUser = await authService.getCurrentUser();
+          console.log('AuthContext: Usuario verificado desde API:', currentUser);
+          setUser(currentUser);
+        } catch (userError) {
+          console.warn('AuthContext: No se pudo verificar usuario, usando datos de login:', userError);
+          // Usamos los datos del login si la verificación falla
+          setUser(response.data.user);
+        }
+        
+        return { success: true, data: response };
+      } else {
+        console.error('AuthContext: Login falló en el backend:', response);
+        return { 
+          success: false, 
+          error: { message: response.message || 'Error en el servidor' } 
+        };
+      }
+    } catch (error) {
+      console.error('AuthContext: Error en login:', error);
+      const errorMessage = error.message || 'Error al iniciar sesión';
+      setError(errorMessage);
+      return { 
+        success: false, 
+        error: { message: errorMessage } 
+      };
+    }
   };
 
-  /**
-   * Objeto de valor que se proporciona a través del contexto.
-   * Contiene el estado y métodos de autenticación.
-   */
+  const register = async (userData) => {
+    setError(null);
+    try {
+      const response = await authService.register(userData);
+      return { success: true, data: response };
+    } catch (error) {
+      setError(error.message || 'Error al registrarse');
+      return { success: false, error };
+    }
+  };
+
+  const logout = async () => {
+    try {
+      console.log('AuthContext: Iniciando logout');
+      await authService.logout();
+      setUser(null);
+      setError(null);
+      console.log('AuthContext: Logout completado');
+      return { success: true };
+    } catch (error) {
+      console.error('AuthContext: Error en logout:', error);
+      authService.clearAuthData();
+      setUser(null);
+      return { success: true };
+    }
+  };
+
+  const updateUser = (userData) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
+  const checkHealth = async () => {
+    try {
+      return await authService.checkHealth();
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -124,12 +129,14 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    updateUser,
+    checkHealth,
     isAuthenticated: !!user,
   };
 
   return (
-    <ContextoAutenticacion.Provider value={value}>
+    <AuthContext.Provider value={value}>
       {children}
-    </ContextoAutenticacion.Provider>
+    </AuthContext.Provider>
   );
 };

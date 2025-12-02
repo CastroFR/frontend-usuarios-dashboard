@@ -1,16 +1,22 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { authService } from '../api/authService';
+import { useAuth } from '../contexts/AuthContext';
 
-const PublicRoute = ({ children, restricted = false }) => {
-  // restricted = true significa que la ruta está restringida a usuarios NO autenticados
-  // Ejemplo: login, register
-  const isAuthenticated = authService.isAuthenticated();
-  
-  if (isAuthenticated && restricted) {
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
-  
+
   return children;
 };
 

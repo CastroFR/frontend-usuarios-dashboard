@@ -104,46 +104,50 @@ src/views/
 
 ---
 
-## 🚀 Instalación y Configuración
+## 🚀 Instalación y Configuración Rápida
 
-### 1. Clonar el repositorio
+Para una instalación completa y detallada, **lee el archivo `SETUP.md`** incluido en el proyecto. Aquí va un resumen rápido:
+
+### Pasos Rápidos:
 
 ```bash
+# 1. Clonar el repositorio
 git clone [URL_DEL_REPOSITORIO]
 cd frontend-usuarios-dashboard
-```
 
-### 2. Instalar dependencias
-
-```bash
+# 2. Instalar todas las dependencias (incluyendo Tailwind CSS v3)
 npm install
-```
 
-### 3. Configurar variables de entorno
-
-```bash
-# Copiar el archivo de ejemplo
+# 3. Configurar variables de entorno
 cp .env.example .env
-```
 
-Edita `.env` y configura:
-
-```env
-VITE_API_BASE_URL=http://localhost:8000/api
-VITE_API_TIMEOUT=10000
-```
-
-> **Nota:** Ajusta el puerto si tu API Laravel usa otro diferente al 8000
-
-### 4. Iniciar servidor de desarrollo
-
-```bash
+# 4. Iniciar servidor de desarrollo
 npm run dev
 ```
 
 La aplicación estará disponible en: `http://localhost:5173`
 
-### 5. Construir para producción
+### ℹ️ Importante
+
+- **Lee `SETUP.md`** para instrucciones detalladas de instalación, configuración y solución de problemas
+- Todos los archivos de configuración (`.env.example`, `package.json`, `package-lock.json`, `tailwind.config.js`, `vite.config.js`, etc.) están incluidos para que funcione con una sola instalación
+- El archivo `.env` NO se sube al repositorio por seguridad, pero `.env.example` sí está disponible como plantilla
+
+### 📋 Archivos de Configuración Incluidos
+
+Estos archivos están versionados en Git y se descargarán automáticamente:
+
+✅ `package.json` - Dependencias del proyecto (Tailwind CSS 3, React 18, etc.)
+✅ `package-lock.json` - Versiones exactas de las dependencias
+✅ `.env.example` - Plantilla de variables de entorno
+✅ `tailwind.config.js` - Configuración de Tailwind CSS v3
+✅ `vite.config.js` - Configuración de Vite
+✅ `postcss.config.js` - Configuración de PostCSS
+✅ `.prettierrc` - Formateo de código
+✅ `eslint.config.js` - Linting de código
+✅ `jsconfig.json` - Configuración de JavaScript
+
+### 🔧 Construir para Producción
 
 ```bash
 npm run build
@@ -222,13 +226,15 @@ frontend-usuarios-dashboard/
 
 | Script | Descripción |
 |--------|-------------|
-| `npm run dev` | Inicia servidor de desarrollo |
-| `npm run build` | Construye para producción |
-| `npm run preview` | Previsualiza la build |
-| `npm run test` | Ejecuta tests unitarios |
-| `npm run test:ui` | Ejecuta tests con interfaz visual |
-| `npm run test:coverage` | Genera reporte de cobertura |
-| `npm run lint` | Ejecuta ESLint |
+| `npm run dev` | Inicia servidor de desarrollo con hot reload |
+| `npm run build` | Construye optimizado para producción |
+| `npm run preview` | Previsualiza la compilación de producción localmente |
+| `npm run test` | Ejecuta tests unitarios con Vitest |
+| `npm run test:ui` | Ejecuta tests con interfaz visual interactiva |
+| `npm run test:coverage` | Genera reporte de cobertura de tests |
+| `npm run lint` | Valida código con ESLint |
+
+**Para más información sobre instalación y configuración**, consulta el archivo `SETUP.md`
 
 ---
 

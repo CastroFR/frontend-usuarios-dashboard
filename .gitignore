@@ -1,4 +1,6 @@
-# Logs
+# ==========================================
+# LOGS Y ARCHIVOS TEMPORALES
+# ==========================================
 logs
 *.log
 npm-debug.log*
@@ -7,18 +9,74 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# ==========================================
+# NODE MODULES Y BUILD
+# ==========================================
+node_modules/
+/dist
+/dist-ssr
 *.local
 
-# Editor directories and files
+# ==========================================
+# VARIABLES DE ENTORNO (Solo ignora el archivo .env local)
+# Pero PERMITE .env.example para que otros sepan la estructura
+# ==========================================
+.env
+.env.local
+.env.*.local
+
+# ==========================================
+# EDITOR Y IDE
+# ==========================================
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.swp
+*.swo
+*~
+
+# ==========================================
+# SISTEMA OPERATIVO
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ==========================================
+# IDE Y HERRAMIENTAS
+# ==========================================
+.vscode-server
+.idea
+.project
+.pydevproject
+*.sublime-project
+*.sublime-workspace
+
+# ==========================================
+# ARCHIVOS DE PRUEBA
+# ==========================================
+coverage/
+.nyc_output/
+
+# ==========================================
+# ARCHIVOS QUE SÍ SE DEBEN SUBIR (permitir)
+# ==========================================
+# Estos archivos NO deben ser ignorados - comentar si es necesario:
+# !package.json
+# !package-lock.json
+# !.env.example
+# !jsconfig.json
+# !tailwind.config.js
+# !vite.config.js
+# !postcss.config.js
+# !.prettierrc
+# !eslint.config.js
