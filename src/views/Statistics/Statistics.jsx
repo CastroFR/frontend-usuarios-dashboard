@@ -33,10 +33,10 @@ const Statistics = () => {
         statisticsService.getMonthlyStats(),
       ]);
 
-      setSummary(summaryData);
-      setDailyStats(daily.data || daily);
-      setWeeklyStats(weekly.data || weekly);
-      setMonthlyStats(monthly.data || monthly);
+      setSummary(summaryData.data || summaryData);
+      setDailyStats(daily.data?.statistics || daily.statistics || []);
+      setWeeklyStats(weekly.data?.statistics || weekly.statistics || []);
+      setMonthlyStats(monthly.data?.statistics || monthly.statistics || []);
     } catch (err) {
       setError('Error al cargar las estadísticas');
       console.error(err);
@@ -142,7 +142,7 @@ const Statistics = () => {
           <div className="space-y-4">
             <div>
               <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {formatNumber(summary?.total_users || 0)}
+                {formatNumber(summary?.total || 0)}
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">
                 Usuarios totales
@@ -150,7 +150,7 @@ const Statistics = () => {
             </div>
             <div>
               <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                {formatNumber(summary?.active_users || 0)}
+                {formatNumber(summary?.active || 0)}
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">
                 Usuarios activos
@@ -168,7 +168,7 @@ const Statistics = () => {
           <div className="space-y-4">
             <div>
               <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {formatNumber(summary?.new_users_today || 0)}
+                {formatNumber(summary?.today || 0)}
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">
                 Registros hoy
@@ -176,10 +176,10 @@ const Statistics = () => {
             </div>
             <div>
               <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                {formatNumber(summary?.yesterday_registrations || 0)}
+                {formatNumber(summary?.this_week || 0)}
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                Registros ayer
+                Registros esta semana
               </div>
             </div>
           </div>
@@ -194,20 +194,18 @@ const Statistics = () => {
           <div className="space-y-4">
             <div>
               <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {summary?.monthly_growth || 0}%
+                {summary?.this_month || 0}
               </div>
-              <div className={`text-sm ${
-                (summary?.monthly_growth || 0) >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {(summary?.monthly_growth || 0) >= 0 ? '↗ Crecimiento' : '↘ Decrecimiento'}
+              <div className="text-sm text-green-600">
+                ↗ Usuarios este mes
               </div>
             </div>
             <div>
               <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                {summary?.active_percentage || 0}%
+                {summary?.deleted || 0}
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                Tasa de actividad
+                Eliminados
               </div>
             </div>
           </div>
@@ -248,10 +246,10 @@ const Statistics = () => {
                         {stat.date ? formatDate(stat.date) : 'N/A'}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                        {formatNumber(stat.registrations || 0)}
+                        {formatNumber(stat.total || 0)}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                        {formatNumber(stat.active_users || 0)}
+                        {formatNumber(stat.total || 0)}
                       </td>
                     </tr>
                   ))}
@@ -294,18 +292,14 @@ const Statistics = () => {
                   {monthlyStats.slice(0, 6).map((stat, index) => (
                     <tr key={index}>
                       <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                        {stat.month || 'N/A'}
+                        {stat.month_name || stat.month || 'N/A'}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                        {formatNumber(stat.registrations || 0)}
+                        {formatNumber(stat.total || 0)}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          (stat.growth || 0) >= 0 
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                            : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                        }`}>
-                          {(stat.growth || 0) >= 0 ? '+' : ''}{stat.growth || 0}%
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                          {stat.total || 0} usuarios
                         </span>
                       </td>
                     </tr>
@@ -343,34 +337,34 @@ const Statistics = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="text-center">
             <div className="text-3xl font-bold text-primary-600 dark:text-primary-400">
-              {summary?.avg_daily_registrations || 0}
+              {summary?.total || 0}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Promedio diario
+              Total usuarios
             </div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-green-600 dark:text-green-400">
-              {summary?.peak_day_registrations || 0}
+              {summary?.active || 0}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Día pico
+              Usuarios activos
             </div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-              {summary?.retention_rate || 0}%
+              {summary?.this_month || 0}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Tasa de retención
+              Este mes
             </div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-              {summary?.avg_session_duration || '0m'}
+              {summary?.deleted || 0}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Duración sesión
+              Eliminados
             </div>
           </div>
         </div>

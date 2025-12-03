@@ -20,16 +20,16 @@ export const DataProvider = ({ children }) => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const summary = await statisticsService.getSummaryStats();
-      const daily = await statisticsService.getDailyStats();
-      const weekly = await statisticsService.getWeeklyStats();
-      const monthly = await statisticsService.getMonthlyStats();
+      const summaryResponse = await statisticsService.getSummaryStats();
+      const dailyResponse = await statisticsService.getDailyStats();
+      const weeklyResponse = await statisticsService.getWeeklyStats();
+      const monthlyResponse = await statisticsService.getMonthlyStats();
       
       setDashboardData({
-        summary,
-        daily,
-        weekly,
-        monthly,
+        summary: summaryResponse.data || summaryResponse,
+        daily: dailyResponse.data || dailyResponse,
+        weekly: weeklyResponse.data || weeklyResponse,
+        monthly: monthlyResponse.data || monthlyResponse,
       });
       setLastUpdated(new Date());
     } catch (error) {
@@ -42,7 +42,7 @@ export const DataProvider = ({ children }) => {
   const loadStatisticsData = async () => {
     try {
       setLoading(true);
-      const [summary, daily, weekly, monthly] = await Promise.all([
+      const [summaryResponse, dailyResponse, weeklyResponse, monthlyResponse] = await Promise.all([
         statisticsService.getSummaryStats(),
         statisticsService.getDailyStats(),
         statisticsService.getWeeklyStats(),
@@ -50,10 +50,10 @@ export const DataProvider = ({ children }) => {
       ]);
       
       setStatisticsData({
-        summary,
-        daily,
-        weekly,
-        monthly,
+        summary: summaryResponse.data || summaryResponse,
+        daily: dailyResponse.data || dailyResponse,
+        weekly: weeklyResponse.data || weeklyResponse,
+        monthly: monthlyResponse.data || monthlyResponse,
       });
       setLastUpdated(new Date());
     } catch (error) {

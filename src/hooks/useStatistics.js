@@ -4,7 +4,7 @@ import { statisticsService } from '../api/statisticsService';
 export const useStatistics = () => {
   const getDailyStats = useCallback(async (params = {}) => {
     try {
-      const data = await statisticsService.getDaily(params);
+      const data = await statisticsService.getDailyStats(params);
       return { success: true, data };
     } catch (error) {
       return { 
@@ -16,7 +16,7 @@ export const useStatistics = () => {
 
   const getWeeklyStats = useCallback(async (params = {}) => {
     try {
-      const data = await statisticsService.getWeekly(params);
+      const data = await statisticsService.getWeeklyStats(params);
       return { success: true, data };
     } catch (error) {
       return { 
@@ -28,7 +28,7 @@ export const useStatistics = () => {
 
   const getMonthlyStats = useCallback(async (params = {}) => {
     try {
-      const data = await statisticsService.getMonthly(params);
+      const data = await statisticsService.getMonthlyStats(params);
       return { success: true, data };
     } catch (error) {
       return { 
@@ -40,7 +40,7 @@ export const useStatistics = () => {
 
   const getSummaryStats = useCallback(async () => {
     try {
-      const data = await statisticsService.getSummary();
+      const data = await statisticsService.getSummaryStats();
       return { success: true, data };
     } catch (error) {
       return { 

@@ -110,10 +110,10 @@ const Dashboard = () => {
           hover
         >
           <div className="text-3xl font-bold text-gray-900 dark:text-white">
-            {formatNumber(dashboardData?.summary?.data?.total_users || 0)}
+            {formatNumber(dashboardData?.summary?.total || 0)}
           </div>
           <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            {dashboardData?.summary?.data?.new_users_today || 0} nuevos hoy
+            {dashboardData?.summary?.today || 0} nuevos hoy
           </div>
         </Card>
 
@@ -124,10 +124,12 @@ const Dashboard = () => {
           hover
         >
           <div className="text-3xl font-bold text-gray-900 dark:text-white">
-            {formatNumber(dashboardData?.summary?.data?.active_users || 0)}
+            {formatNumber(dashboardData?.summary?.active || 0)}
           </div>
           <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            {dashboardData?.summary?.data?.active_percentage || 0}% del total
+            {(dashboardData?.summary?.active && dashboardData?.summary?.total) 
+              ? Math.round((dashboardData.summary.active / dashboardData.summary.total) * 100)
+              : 0}% del total
           </div>
         </Card>
 
@@ -138,12 +140,10 @@ const Dashboard = () => {
           hover
         >
           <div className="text-3xl font-bold text-gray-900 dark:text-white">
-            {dashboardData?.summary?.data?.monthly_growth || 0}%
+            {dashboardData?.summary?.this_month || 0}
           </div>
-          <div className={`mt-2 text-sm ${
-            (dashboardData?.summary?.data?.monthly_growth || 0) >= 0 ? 'text-green-600' : 'text-red-600'
-          }`}>
-            {(dashboardData?.summary?.data?.monthly_growth || 0) >= 0 ? '↗' : '↘'} desde el mes anterior
+          <div className={`mt-2 text-sm text-green-600`}>
+            Usuarios este mes
           </div>
         </Card>
 
@@ -154,10 +154,10 @@ const Dashboard = () => {
           hover
         >
           <div className="text-3xl font-bold text-gray-900 dark:text-white">
-            {formatNumber(dashboardData?.summary?.data?.today_registrations || 0)}
+            {formatNumber(dashboardData?.summary?.today || 0)}
           </div>
           <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            {dashboardData?.summary?.data?.yesterday_registrations || 0} ayer
+            Usuarios desde hoy
           </div>
         </Card>
       </div>
@@ -173,13 +173,13 @@ const Dashboard = () => {
             </Button>
           }
         >
-          {dashboardData?.daily?.data?.length > 0 ? (
+          {dashboardData?.daily?.statistics && dashboardData.daily.statistics.length > 0 ? (
             <div className="h-64">
               <div className="h-full flex items-center justify-center text-gray-400 dark:text-gray-500">
                 Gráfico de actividad diaria
                 <div className="ml-4 text-sm">
-                  <p>Registros: {dashboardData.daily.data.reduce((acc, day) => acc + (day.registrations || 0), 0)}</p>
-                  <p>Promedio: {Math.round(dashboardData.daily.data.reduce((acc, day) => acc + (day.registrations || 0), 0) / 7)} por día</p>
+                  <p>Registros: {dashboardData.daily.statistics.reduce((acc, day) => acc + (day.total || 0), 0)}</p>
+                  <p>Promedio: {Math.round(dashboardData.daily.statistics.reduce((acc, day) => acc + (day.total || 0), 0) / (dashboardData.daily.statistics.length || 1))} por día</p>
                 </div>
               </div>
             </div>
@@ -199,13 +199,13 @@ const Dashboard = () => {
             </Button>
           }
         >
-          {dashboardData?.monthly?.data?.length > 0 ? (
+          {dashboardData?.monthly?.statistics && dashboardData.monthly.statistics.length > 0 ? (
             <div className="h-64">
               <div className="h-full flex items-center justify-center text-gray-400 dark:text-gray-500">
                 Gráfico de crecimiento mensual
                 <div className="ml-4 text-sm">
-                  <p>Total: {dashboardData.monthly.data.reduce((acc, month) => acc + (month.registrations || 0), 0)}</p>
-                  <p>Crecimiento: {dashboardData.monthly.data[dashboardData.monthly.data.length - 1]?.growth || 0}%</p>
+                  <p>Total: {dashboardData.monthly.statistics.reduce((acc, month) => acc + (month.total || 0), 0)}</p>
+                  <p>Máximo: {Math.max(...dashboardData.monthly.statistics.map(m => m.total || 0))} usuarios</p>
                 </div>
               </div>
             </div>
