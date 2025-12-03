@@ -3,6 +3,10 @@ import { statisticsService } from '../../api/statisticsService';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
+import { LineChart, BarChart, PieChart } from '../../components/common/Chart';
+import DailyStats from './DailyStats';
+import WeeklyStats from './WeeklyStats';
+import MonthlyStats from './MonthlyStats';
 import { formatNumber, formatDate } from '../../utils/helpers';
 
 const Statistics = () => {
@@ -213,124 +217,114 @@ const Statistics = () => {
       </div>
 
       {/* Datos Detallados */}
+      <div className="grid grid-cols-1 gap-6">
+        <DailyStats dailyStats={dailyStats} />
+        <WeeklyStats weeklyStats={weeklyStats} />
+        <MonthlyStats monthlyStats={monthlyStats} />
+      </div>
+
+      {/* Gráficos de Análisis */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card 
-          title="Estadísticas Diarias" 
-          subtitle="Últimos 7 días"
-          headerAction={
-            <Button variant="ghost" size="sm">
-              Exportar
-            </Button>
-          }
-        >
-          {dailyStats.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                      Fecha
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                      Registros
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                      Activos
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {dailyStats.slice(0, 7).map((stat, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                        {stat.date ? formatDate(stat.date) : 'N/A'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                        {formatNumber(stat.total || 0)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                        {formatNumber(stat.total || 0)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-400 dark:text-gray-500">
-              No hay datos diarios disponibles
+        <Card title="Distribución de Usuarios" subtitle="Activos vs Eliminados">
+          {summary && (
+            <div className="h-80">
+              <PieChart
+                labels={['Activos', 'Eliminados']}
+                datasets={[
+                  {
+                    data: [summary.active || 0, summary.deleted || 0],
+                  },
+                ]}
+                title="Distribución de Estados"
+              />
             </div>
           )}
         </Card>
 
-        <Card 
-          title="Estadísticas Mensuales" 
-          subtitle="Últimos 6 meses"
-          headerAction={
-            <Button variant="ghost" size="sm">
-              Exportar
-            </Button>
-          }
-        >
-          {monthlyStats.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                      Mes
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                      Registros
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                      Crecimiento
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {monthlyStats.slice(0, 6).map((stat, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                        {stat.month_name || stat.month || 'N/A'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                        {formatNumber(stat.total || 0)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-                          {stat.total || 0} usuarios
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-400 dark:text-gray-500">
-              No hay datos mensuales disponibles
+        <Card title="Tendencia de Registros" subtitle="Últimos 12 meses">
+          {monthlyStats.length > 0 && (
+            <div className="h-80">
+              <LineChart
+                labels={monthlyStats
+                  .slice(0, 12)
+                  .reverse()
+                  .map(stat => stat.month_name ? stat.month_name.substring(0, 3) : `M${stat.month}`)}
+                datasets={[
+                  {
+                    label: 'Registros',
+                    data: monthlyStats.slice(0, 12).reverse().map(stat => stat.total || 0),
+                    borderColor: '#F59E0B',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                  },
+                ]}
+                title="Tendencia Anual"
+              />
             </div>
           )}
         </Card>
       </div>
 
-      {/* Gráficos */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card title="Distribución de Usuarios" subtitle="Por estado">
-          <div className="h-64 flex items-center justify-center text-gray-400 dark:text-gray-500">
-            Gráfico de distribución
-            {/* Aquí iría Chart.js o similar */}
+      {/* Comparativa de períodos */}
+      <Card title="Resumen Comparativo" subtitle="Diario vs Semanal vs Mensual">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Comparativa Diaria */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-gray-900 dark:text-white">Período Diario</h3>
+            {dailyStats.length > 0 ? (
+              <div>
+                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  {formatNumber(
+                    dailyStats.slice(0, 7).reduce((acc, stat) => acc + (stat.total || 0), 0)
+                  )}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  Últimos 7 días
+                </div>
+              </div>
+            ) : (
+              <div className="text-gray-400">Sin datos</div>
+            )}
           </div>
-        </Card>
 
-        <Card title="Tendencia de Registros" subtitle="Último año">
-          <div className="h-64 flex items-center justify-center text-gray-400 dark:text-gray-500">
-            Gráfico de tendencia
-            {/* Aquí iría Chart.js o similar */}
+          {/* Comparativa Semanal */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-gray-900 dark:text-white">Período Semanal</h3>
+            {weeklyStats.length > 0 ? (
+              <div>
+                <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                  {formatNumber(
+                    weeklyStats.slice(0, 4).reduce((acc, stat) => acc + (stat.total || 0), 0)
+                  )}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  Últimas 4 semanas
+                </div>
+              </div>
+            ) : (
+              <div className="text-gray-400">Sin datos</div>
+            )}
           </div>
-        </Card>
-      </div>
+
+          {/* Comparativa Mensual */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-gray-900 dark:text-white">Período Mensual</h3>
+            {monthlyStats.length > 0 ? (
+              <div>
+                <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                  {formatNumber(
+                    monthlyStats.slice(0, 12).reduce((acc, stat) => acc + (stat.total || 0), 0)
+                  )}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  Últimos 12 meses
+                </div>
+              </div>
+            ) : (
+              <div className="text-gray-400">Sin datos</div>
+            )}
+          </div>
+        </div>
+      </Card>
 
       {/* Métricas Adicionales */}
       <Card title="Métricas del Sistema">

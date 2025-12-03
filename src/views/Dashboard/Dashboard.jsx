@@ -2,17 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../../contexts/DataContext';
 import { authService } from '../../api/authService';
+import { statisticsService } from '../../api/statisticsService';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
+import { BarChart, LineChart, PieChart } from '../../components/common/Chart';
 import { formatNumber } from '../../utils/helpers';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { dashboardData, loading, lastUpdated, refreshData } = useData();
   const [apiHealth, setApiHealth] = useState(null);
+  const [weeklyStats, setWeeklyStats] = useState([]);
+  const [dailyStats, setDailyStats] = useState([]);
+  const [monthlyStats, setMonthlyStats] = useState([]);
 
   useEffect(() => {
     checkApiHealth();
+    loadStatistics();
   }, []);
 
   const checkApiHealth = async () => {
@@ -21,6 +27,22 @@ const Dashboard = () => {
       setApiHealth(health);
     } catch (error) {
       setApiHealth({ status: 'unreachable', message: 'API no disponible' });
+    }
+  };
+
+  const loadStatistics = async () => {
+    try {
+      const [daily, weekly, monthly] = await Promise.all([
+        statisticsService.getDailyStats(),
+        statisticsService.getWeeklyStats(),
+        statisticsService.getMonthlyStats(),
+      ]);
+
+      setDailyStats(daily.data?.statistics || daily.statistics || []);
+      setWeeklyStats(weekly.data?.statistics || weekly.statistics || []);
+      setMonthlyStats(monthly.data?.statistics || monthly.statistics || []);
+    } catch (error) {
+      console.error('Error cargando estadísticas:', error);
     }
   };
 
@@ -163,7 +185,7 @@ const Dashboard = () => {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card 
           title="Actividad Diaria" 
           subtitle="Últimos 7 días"
@@ -173,44 +195,91 @@ const Dashboard = () => {
             </Button>
           }
         >
-          {dashboardData?.daily?.statistics && dashboardData.daily.statistics.length > 0 ? (
-            <div className="h-64">
-              <div className="h-full flex items-center justify-center text-gray-400 dark:text-gray-500">
-                Gráfico de actividad diaria
-                <div className="ml-4 text-sm">
-                  <p>Registros: {dashboardData.daily.statistics.reduce((acc, day) => acc + (day.total || 0), 0)}</p>
-                  <p>Promedio: {Math.round(dashboardData.daily.statistics.reduce((acc, day) => acc + (day.total || 0), 0) / (dashboardData.daily.statistics.length || 1))} por día</p>
-                </div>
-              </div>
+          {dailyStats && dailyStats.length > 0 ? (
+            <div className="h-80">
+              <BarChart
+                labels={dailyStats
+                  .slice(0, 7)
+                  .reverse()
+                  .map((stat, idx) => `Día ${idx + 1}`)}
+                datasets={[
+                  {
+                    label: 'Registros',
+                    data: dailyStats.slice(0, 7).reverse().map(d => d.total || 0),
+                  },
+                ]}
+                title="Registros Diarios"
+              />
             </div>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 dark:text-gray-500">
+            <div className="h-80 flex items-center justify-center text-gray-400 dark:text-gray-500">
               No hay datos de actividad disponibles
             </div>
           )}
         </Card>
 
         <Card 
-          title="Crecimiento Mensual" 
-          subtitle="Últimos 6 meses"
+          title="Actividad Semanal" 
+          subtitle="Últimas 4 semanas"
           headerAction={
             <Button variant="ghost" size="sm" onClick={() => navigate('/statistics')}>
               Ver más
             </Button>
           }
         >
-          {dashboardData?.monthly?.statistics && dashboardData.monthly.statistics.length > 0 ? (
-            <div className="h-64">
-              <div className="h-full flex items-center justify-center text-gray-400 dark:text-gray-500">
-                Gráfico de crecimiento mensual
-                <div className="ml-4 text-sm">
-                  <p>Total: {dashboardData.monthly.statistics.reduce((acc, month) => acc + (month.total || 0), 0)}</p>
-                  <p>Máximo: {Math.max(...dashboardData.monthly.statistics.map(m => m.total || 0))} usuarios</p>
-                </div>
-              </div>
+          {weeklyStats && weeklyStats.length > 0 ? (
+            <div className="h-80">
+              <BarChart
+                labels={weeklyStats
+                  .slice(0, 4)
+                  .reverse()
+                  .map(stat => `Semana ${stat.week}`)}
+                datasets={[
+                  {
+                    label: 'Registros',
+                    data: weeklyStats.slice(0, 4).reverse().map(w => w.total || 0),
+                    backgroundColor: '#10B981',
+                  },
+                ]}
+                title="Registros Semanales"
+              />
             </div>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 dark:text-gray-500">
+            <div className="h-80 flex items-center justify-center text-gray-400 dark:text-gray-500">
+              No hay datos de actividad semanal disponibles
+            </div>
+          )}
+        </Card>
+
+        <Card 
+          title="Crecimiento Mensual" 
+          subtitle="Últimos 12 meses"
+          headerAction={
+            <Button variant="ghost" size="sm" onClick={() => navigate('/statistics')}>
+              Ver más
+            </Button>
+          }
+        >
+          {monthlyStats && monthlyStats.length > 0 ? (
+            <div className="h-80">
+              <LineChart
+                labels={monthlyStats
+                  .slice(0, 12)
+                  .reverse()
+                  .map(stat => stat.month_name ? stat.month_name.substring(0, 3) : `M${stat.month}`)}
+                datasets={[
+                  {
+                    label: 'Registros',
+                    data: monthlyStats.slice(0, 12).reverse().map(m => m.total || 0),
+                    borderColor: '#F59E0B',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                  },
+                ]}
+                title="Crecimiento Mensual"
+              />
+            </div>
+          ) : (
+            <div className="h-80 flex items-center justify-center text-gray-400 dark:text-gray-500">
               No hay datos de crecimiento disponibles
             </div>
           )}

@@ -1,7 +1,20 @@
-export const formatDate = (dateString, options = {}) => {
+export const formatDate = (dateString, format = 'default') => {
   if (!dateString) return '';
   
   const date = new Date(dateString);
+  
+  if (format === 'DD/MM') {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}`;
+  }
+  
+  if (format === 'DD/MM/YYYY') {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
   
   const defaultOptions = {
     year: 'numeric',
@@ -9,7 +22,7 @@ export const formatDate = (dateString, options = {}) => {
     day: 'numeric',
   };
   
-  return date.toLocaleDateString('es-ES', { ...defaultOptions, ...options });
+  return date.toLocaleDateString('es-ES', defaultOptions);
 };
 
 export const formatDateTime = (dateString) => {

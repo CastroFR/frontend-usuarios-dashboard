@@ -5,7 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useNotification } from '../../contexts/NotificationContext';
 import { formatTimeAgo } from '../../utils/helpers';
 
-const Header = () => {
+const Header = ({ onMenuToggle }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { darkMode, toggleDarkMode } = useTheme();
