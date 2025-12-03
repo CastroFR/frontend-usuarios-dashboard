@@ -78,7 +78,11 @@ const Header = ({ onMenuToggle }) => {
       <div className="flex justify-between items-center px-4 py-3 sm:px-6">
         <div className="flex items-center">
           <div className="md:hidden mr-4">
-            <button className="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <button 
+              onClick={onMenuToggle}
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
+              aria-label="Toggle sidebar menu"
+            >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
