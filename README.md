@@ -1,3 +1,11 @@
+<p align="center"><a href="https://react.dev" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1200px-React-icon.svg.png" width="100" alt="React Logo"></a></p>
+
+<p align="center">
+<a href="#-características-principales"><img src="https://img.shields.io/badge/Estado-Completado-brightgreen" alt="Status"></a>
+<a href="#-tecnologías"><img src="https://img.shields.io/badge/React-v18-blue" alt="React Version"></a>
+<a href="#-equipo-de-3-personas"><img src="https://img.shields.io/badge/Equipo-3%20Personas-blueviolet" alt="Team"></a>
+</p>
+
 # 🚀 Dashboard de Administración de Usuarios - Frontend
 
 Dashboard profesional construido con **React + Vite + Tailwind CSS** para consumir la API de Gestión de Usuarios desarrollada en Laravel.
@@ -229,10 +237,11 @@ frontend-usuarios-dashboard/
 | `npm run dev` | Inicia servidor de desarrollo con hot reload |
 | `npm run build` | Construye optimizado para producción |
 | `npm run preview` | Previsualiza la compilación de producción localmente |
-| `npm run test` | Ejecuta tests unitarios con Vitest |
-| `npm run test:ui` | Ejecuta tests con interfaz visual interactiva |
-| `npm run test:coverage` | Genera reporte de cobertura de tests |
 | `npm run lint` | Valida código con ESLint |
+| `npm run test` | Ejecuta todos los tests unitarios e integración |
+| `npm run test:watch` | Ejecuta tests en modo watch (re-ejecuta en cambios) |
+| `npm run test:ui` | Interfaz visual para ejecutar y monitorear tests |
+| `npm run test:coverage` | Genera reporte de cobertura de tests |
 
 **Para más información sobre instalación y configuración**, consulta el archivo `SETUP.md`
 
@@ -240,23 +249,61 @@ frontend-usuarios-dashboard/
 
 ## 🧪 Testing
 
+### Suite de Tests Completa
+
+El proyecto incluye **46 casos de prueba** cubriendo:
+
+- ✅ **Servicios API**: Autenticación, Usuarios, Estadísticas (13 tests)
+- ✅ **Utilidades**: Formatters, Validadores, Constantes (10 tests)
+- ✅ **Flujos de Trabajo**: Login, Gestión de Usuarios, Estadísticas (17 tests)
+- ✅ **Componentes**: Button y otros componentes reutilizables (6 tests)
+
+### Estructura de Tests
+
+```
+tests/
+├── setup.js                    # Configuración global y mocks
+├── unit/
+│   ├── services.test.js       # Tests de servicios API (13 tests)
+│   └── utils.test.js          # Tests de utilidades (10 tests)
+└── integration/
+    └── workflows.test.js      # Tests de flujos completos (17 tests)
+
+src/components/
+└── common/Button/
+    └── Button.test.js         # Tests de componentes (6 tests)
+```
+
 ### Ejecutar tests
 
 ```bash
+# Ejecutar todos los tests una sola vez
 npm run test
-```
 
-### Ejecutar tests con interfaz visual
+# Modo watch - monitorea cambios
+npm run test:watch
 
-```bash
+# Interfaz visual interactiva
 npm run test:ui
-```
 
-### Ejecutar tests con cobertura
-
-```bash
+# Cobertura de tests
 npm run test:coverage
 ```
+
+### Resultados Esperados
+
+```
+✓ src/components/common/Button/Button.test.js (6 tests)
+✓ tests/unit/utils.test.js (10 tests)
+✓ tests/unit/services.test.js (13 tests)
+✓ tests/integration/workflows.test.js (17 tests)
+
+Test Files  4 passed (4)
+Tests       46 passed (46)
+Duration    2.13s
+```
+
+**Para documentación detallada de tests**, consulta [`TESTING.md`](TESTING.md)
 
 ---
 
