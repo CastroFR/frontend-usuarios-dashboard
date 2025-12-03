@@ -45,29 +45,20 @@ const Dashboard = () => {
   };
 
   if (loading && !dashboardData) {
+    // Estado de carga inicial
     return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-          <Button onClick={refreshData} loading={loading}>
-            Actualizar
-          </Button>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <div className="animate-pulse space-y-3">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-              </div>
-            </Card>
-          ))}
-        </div>
+    <div className="space-y-6 animate-pulse">
+      <h1 className="text-3xl font-bold">Dashboard</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-gray-200 dark:bg-gray-700 h-24 rounded-lg"></div>
+        <div className="bg-gray-200 dark:bg-gray-700 h-24 rounded-lg"></div>
+        <div className="bg-gray-200 dark:bg-gray-700 h-24 rounded-lg"></div>
+        <div className="bg-gray-200 dark:bg-gray-700 h-24 rounded-lg"></div>
       </div>
-    );
-  }
+      <div className="bg-gray-200 dark:bg-gray-700 h-96 rounded-lg"></div>
+    </div>
+  );
+}
 
   return (
     <div className="space-y-6">
